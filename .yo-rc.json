@@ -1,0 +1,29 @@
+{
+  "generator-angularjs-library": {
+    "props": {
+      "author": {
+        "name": "theborakompanioni",
+        "email": "theborakompanioni+angular-vissense@gmail.com"
+      },
+      "libraryName": {
+        "original": "angular-vissense",
+        "camelized": "angularVissense",
+        "dasherized": "angular-vissense",
+        "slugified": "angular-vissense",
+        "parts": [
+          "angular",
+          "vissense"
+        ]
+      },
+      "includeModuleDirectives": true,
+      "includeModuleFilters": false,
+      "includeModuleServices": true,
+      "includeAngularModuleResource": false,
+      "includeAngularModuleCookies": false,
+      "includeAngularModuleSanitize": false,
+      "librarySrcDirectory": "src/angular-vissense",
+      "libraryUnitTestDirectory": "test/unit/angular-vissense",
+      "libraryUnitE2eDirectory": "test/e2e/angular-vissense"
+    }
+  }
+}

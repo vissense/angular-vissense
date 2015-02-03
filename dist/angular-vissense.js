@@ -21,6 +21,133 @@
 
 (function (angular) {
   angular.module('angular-vissense.directives.debug')
+    .directive('vissenseMetricsInfocard', [function () {
+      var d = {
+        scope: {
+          elementId: '@vissenseMetricsInfocard'
+        },
+        controller: ['$scope', '$interval', 'VisSense', 'VisUtils', 'VisSenseService',
+          function($scope, $interval, VisSense, VisUtils, VisSenseService) {
+
+          var visobj = VisSenseService.fromId($scope.elementId, {});
+
+          var metrics = visobj.metrics({
+            strategy: new VisSense.VisMon.Strategy.PollingStrategy({ interval:100 })
+          }).start();
+
+          var vismon = visobj.monitor({
+            visibilitychange: VisUtils.debounce(function(monitor) {
+              $scope.$apply(function() {
+                $scope.state = monitor.state().state;
+              });
+            }, 0)
+          }).start();
+
+          var _update = VisUtils.debounce(function() {
+            $scope.$apply(function() {
+              $scope.timeHidden = metrics.getMetric('time.hidden').get();
+              $scope.timeVisible = metrics.getMetric('time.visible').get();
+              $scope.timeFullyVisible = metrics.getMetric('time.fullyvisible').get();
+              $scope.timeRelativeVisible = metrics.getMetric('time.relativeVisible').get();
+              $scope.duration = metrics.getMetric('time.duration').get();
+
+              $scope.percentage = {
+                current: metrics.getMetric('percentage').get(),
+                max: metrics.getMetric('percentage.max').get(),
+                min: metrics.getMetric('percentage.min').get()
+              };
+            });
+          }, 0);
+
+          var intervalId = $interval(_update, 200);
+
+          $scope.$on('$destroy', function() {
+            metrics.stop();
+            vismon.stop();
+            $interval.cancel(intervalId);
+          });
+
+        }],
+        template: '\
+<style>\
+.vissense-metrics-container {\
+margin: 0px;\
+position: fixed;\
+left: 42px;\
+bottom: 13px;\
+width: 600px;\
+height: 200px;\
+box-shadow: 3px 3px 15px 3px rgba(0, 0, 0, 0.4);\
+z-index: 99999;\
+background-color: rgba(242,242,242,0.9);\
+}\
+.vissense-flexbox {\
+display: box;\
+display: -webkit-box;\
+display: -moz-box;\
+box-orient: horizontal;\
+-webkit-box-orient: horizontal;\
+-moz-box-orient: horizontal;\
+}\
+.vissense-flexbox .box {\
+font-size: 23px;\
+padding: 10px;\
+width: 150px;\
+text-align: center;\
+}\
+.vissense-flexbox .vissense-box small {\
+color: #888;\
+}\
+</style>\
+<div class="vissense-metrics-container">\
+<div style="text-align:center">{{state}}</div>\
+<div class="vissense-flexbox">\
+<div class="box">\
+<div>{{timeVisible / 1000 | number:1}}s</div>\
+<small>time visible</small>\
+</div>\
+<div class="box">\
+<div>{{timeFullyVisible / 1000 | number:1}}s</div>\
+<small>time fullyvisible</small>\
+</div>\
+<div class="box">\
+<div>{{timeHidden * 100 / duration | number:0}}%</div>\
+<small>percentage hidden</small>\
+</div>\
+<div class="box">\
+<div>{{timeVisible * 100 / duration | number:0}}%</div>\
+<small>percentage visible</small>\
+</div>\
+</div>\
+<div class="vissense-flexbox">\
+<div class="box">\
+<div>{{timeHidden / 1000 | number:1}}s</div>\
+<small>time hidden</small>\
+</div>\
+<div class="box">\
+<div>{{timeRelativeVisible / 1000 | number:1}}s</div>\
+<small>time relative</small>\
+</div>\
+<div class="box">\
+<div>{{percentage.min * 100 | number:0}}%</div>\
+<small>percentage min</small>\
+</div>\
+<div class="box">\
+<div>{{percentage.max * 100 | number:0}}%</div>\
+<small>percentage max</small>\
+</div>\
+</div>\
+</div>'
+      };
+
+      return d;
+    }])
+  ;
+
+})(angular);
+
+(function (angular) {
+  angular.module('angular-vissense.directives.debug')
 
     .directive('vissensePercentageTimeTest', ['VisSenseService', function (VisSenseService) {
 
@@ -90,7 +217,8 @@
 (function (angular) {
   angular.module('angular-vissense.directives.debug')
 
-    .directive('vissensePercentage', ['VisSenseService', '$timeout', function (VisSenseService, $timeout) {
+    .directive('vissensePercentage', ['VisSenseService', 'VisUtils', '$timeout',
+      function (VisSenseService, VisUtils, $timeout) {
 
       var d = {
         scope: {
@@ -100,18 +228,16 @@
           $scope.percentage = '?';
           $timeout(function() {
             var vismon = VisSenseService.fromId($scope.elementId).monitor({
-              percentagechange: function() {
+              percentagechange: VisUtils.debounce(function() {
                 $scope.$apply(function() {
                   $scope.percentage = vismon.state().percentage;
                 });
-              }
-            });
+              }, 10)
+            }).start();
 
             $scope.$on('$destroy', function() {
               vismon.stop();
             });
-
-            VisSenseService.startMonitorAsync(vismon);
           });
         }],
         template: '<span>' +
@@ -128,7 +254,8 @@
 (function (angular) {
   angular.module('angular-vissense.directives.debug')
 
-    .directive('vissenseState', ['VisSenseService', '$timeout', function (VisSenseService, $timeout) {
+    .directive('vissenseState', ['VisSenseService', 'VisUtils', '$timeout',
+      function (VisSenseService, VisUtils, $timeout) {
 
       var d = {
         scope: {
@@ -145,18 +272,16 @@
               fullyvisible: parseFloat($scope.fullyvisible) || 1,
               hidden: parseFloat($scope.hidden) || 0
             }).monitor({
-              visibilitychange: function(monitor) {
+              visibilitychange: VisUtils.debounce(function(monitor) {
                 $scope.$apply(function() {
                   $scope.state = monitor.state().state;
                 });
-              }
-            });
+              }, 10)
+            }).start();
 
             $scope.$on('$destroy', function() {
               vismon.stop();
             });
-
-            VisSenseService.startMonitorAsync(vismon);
           });
         },
         template: '<span>{{state}}</span>'
@@ -165,7 +290,8 @@
       return d;
     }])
 
-    .directive('vissenseStateDebug', ['VisSenseService',  '$timeout', function (VisSenseService, $timeout) {
+    .directive('vissenseStateDebug', ['VisSenseService',  'VisUtils', '$timeout',
+      function (VisSenseService, VisUtils, $timeout) {
       var d = {
         scope: {
           elementId: '@vissenseStateDebug'
@@ -174,18 +300,16 @@
           $scope.state = {};
           $timeout(function() {
             var vismon = VisSenseService.fromId($scope.elementId).monitor({
-              update: function(monitor) {
+              update: VisUtils.debounce(function(monitor) {
                 $scope.$apply(function() {
                   $scope.state = monitor.state();
                 });
-              }
-            });
+              }, 10)
+            }).start();
 
             $scope.$on('$destroy', function() {
               vismon.stop();
             });
-
-            VisSenseService.startMonitorAsync(vismon);
           });
         }],
         template: '{{ state | json }}'
@@ -199,25 +323,20 @@
 
 (function (angular) {
   angular.module('angular-vissense.services')
-  .factory('VisSense', ['$window', function($window) {
-    return $window.VisSense;
-  }])
+    .factory('VisSense', ['$window', function($window) {
+      return $window.VisSense;
+    }])
+    .factory('VisUtils', ['VisSense', function(VisSense) {
+      return VisSense.Utils;
+    }])
 
   .factory('VisSenseService', ['VisSense', function(VisSense) {
     var fromId = function(elementId, config) {
       var elementById = document.getElementById(elementId);
       return new VisSense(elementById, config);
     };
-
-    var startMonitorAsync = function (monitor) {
-      setTimeout(function() {
-        monitor.start();
-      }, 1);
-    };
-
     return {
-      fromId: fromId,
-      startMonitorAsync: startMonitorAsync
+      fromId: fromId
     };
   }])
   ;

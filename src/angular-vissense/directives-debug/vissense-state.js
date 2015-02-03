@@ -1,7 +1,8 @@
 (function (angular) {
   angular.module('angular-vissense.directives.debug')
 
-    .directive('vissenseState', ['VisSenseService', '$timeout', function (VisSenseService, $timeout) {
+    .directive('vissenseState', ['VisSenseService', 'VisUtils', '$timeout',
+      function (VisSenseService, VisUtils, $timeout) {
 
       var d = {
         scope: {
@@ -18,18 +19,16 @@
               fullyvisible: parseFloat($scope.fullyvisible) || 1,
               hidden: parseFloat($scope.hidden) || 0
             }).monitor({
-              visibilitychange: function(monitor) {
+              visibilitychange: VisUtils.debounce(function(monitor) {
                 $scope.$apply(function() {
                   $scope.state = monitor.state().state;
                 });
-              }
-            });
+              }, 10)
+            }).start();
 
             $scope.$on('$destroy', function() {
               vismon.stop();
             });
-
-            VisSenseService.startMonitorAsync(vismon);
           });
         },
         template: '<span>{{state}}</span>'
@@ -38,7 +37,8 @@
       return d;
     }])
 
-    .directive('vissenseStateDebug', ['VisSenseService',  '$timeout', function (VisSenseService, $timeout) {
+    .directive('vissenseStateDebug', ['VisSenseService',  'VisUtils', '$timeout',
+      function (VisSenseService, VisUtils, $timeout) {
       var d = {
         scope: {
           elementId: '@vissenseStateDebug'
@@ -47,18 +47,16 @@
           $scope.state = {};
           $timeout(function() {
             var vismon = VisSenseService.fromId($scope.elementId).monitor({
-              update: function(monitor) {
+              update: VisUtils.debounce(function(monitor) {
                 $scope.$apply(function() {
                   $scope.state = monitor.state();
                 });
-              }
-            });
+              }, 10)
+            }).start();
 
             $scope.$on('$destroy', function() {
               vismon.stop();
             });
-
-            VisSenseService.startMonitorAsync(vismon);
           });
         }],
         template: '{{ state | json }}'

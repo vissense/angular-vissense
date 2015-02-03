@@ -41,7 +41,7 @@
   "loopfunc": true,
   "maxerr": false,
   "moz": false,
-  "multistr": false,
+  "multistr": true,
   "notypeof": false,
   "proto": false,
   "scripturl": false,

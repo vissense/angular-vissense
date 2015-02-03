@@ -23,12 +23,14 @@
                   $scope.state = monitor.state().state;
                 });
               }
-            }).start();
+            });
 
             $scope.$on('$destroy', function() {
               vismon.stop();
             });
-          }, 1);
+
+            VisSenseService.startMonitorAsync(vismon);
+          });
         },
         template: '<span>{{state}}</span>'
       };
@@ -36,23 +38,27 @@
       return d;
     }])
 
-    .directive('vissenseStateDebug', ['VisSenseService', function (VisSenseService) {
+    .directive('vissenseStateDebug', ['VisSenseService',  '$timeout', function (VisSenseService, $timeout) {
       var d = {
         scope: {
           elementId: '@vissenseStateDebug'
         },
         controller: ['$scope', function($scope) {
           $scope.state = {};
-          var vismon = VisSenseService.fromId($scope.elementId).monitor({
-            update: function(monitor) {
-              $scope.$apply(function() {
-                $scope.state = monitor.state();
-              });
-            }
-          }).start();
+          $timeout(function() {
+            var vismon = VisSenseService.fromId($scope.elementId).monitor({
+              update: function(monitor) {
+                $scope.$apply(function() {
+                  $scope.state = monitor.state();
+                });
+              }
+            });
 
-          $scope.$on('$destroy', function() {
-            vismon.stop();
+            $scope.$on('$destroy', function() {
+              vismon.stop();
+            });
+
+            VisSenseService.startMonitorAsync(vismon);
           });
         }],
         template: '{{ state | json }}'

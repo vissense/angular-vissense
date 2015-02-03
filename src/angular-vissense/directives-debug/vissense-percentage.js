@@ -1,7 +1,7 @@
 (function (angular) {
   angular.module('angular-vissense.directives.debug')
 
-    .directive('vissensePercentage', ['VisSenseService', function (VisSenseService) {
+    .directive('vissensePercentage', ['VisSenseService', '$timeout', function (VisSenseService, $timeout) {
 
       var d = {
         scope: {
@@ -9,17 +9,20 @@
         },
         controller: ['$scope', function($scope) {
           $scope.percentage = '?';
+          $timeout(function() {
+            var vismon = VisSenseService.fromId($scope.elementId).monitor({
+              percentagechange: function() {
+                $scope.$apply(function() {
+                  $scope.percentage = vismon.state().percentage;
+                });
+              }
+            });
 
-          var vismon = VisSenseService.fromId($scope.elementId).monitor({
-            percentagechange: function() {
-              $scope.$apply(function() {
-                $scope.percentage = vismon.state().percentage;
-              });
-            }
-          }).start();
+            $scope.$on('$destroy', function() {
+              vismon.stop();
+            });
 
-          $scope.$on('$destroy', function() {
-            vismon.stop();
+            VisSenseService.startMonitorAsync(vismon);
           });
         }],
         template: '<span>' +

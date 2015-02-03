@@ -10,8 +10,15 @@
       return new VisSense(elementById, config);
     };
 
+    var startMonitorAsync = function (monitor) {
+      setTimeout(function() {
+        monitor.start();
+      }, 1);
+    };
+
     return {
-      fromId: fromId
+      fromId: fromId,
+      startMonitorAsync: startMonitorAsync
     };
   }])
   ;

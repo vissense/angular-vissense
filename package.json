@@ -5,6 +5,11 @@
     "name": "theborakompanioni",
     "email": "theborakompanioni+angular-vissense@gmail.com"
   },
+  "scripts": {
+    "test": "gulp process-all --verbose",
+    "test-dist-concatenated": "gulp test-dist-concatenated --verbose",
+    "test-dist-minified": "gulp test-dist-minified --verbose"
+  },
   "dependencies": {},
   "devDependencies": {
     "chai": "^1.9.1",

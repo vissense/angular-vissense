@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/vissense/angular-vissense.svg)](https://travis-ci.org/vissense/angular-vissense)
+
 angular-vissense
 =================
 

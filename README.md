@@ -5,6 +5,18 @@ angular-vissense
 
 Angular directives for [VisSense.js](https://github.com/vissense/vissense).
 
+```html
+  <div vissense-monitor
+      on-hidden="state = 'hidden'"
+      on-visible="state = 'visible'"
+      on-fullyvisible="state = 'fully visible'">
+      
+    this element is currently {{ state }}
+    <!-- more important content here -->
+    
+  </div>
+```
+
 Contribute
 ------------
 

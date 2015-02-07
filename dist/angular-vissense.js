@@ -22,8 +22,8 @@
 (function (angular) {
   angular.module('angular-vissense.directives')
 
-    .directive('vissenseMonitor', ['VisSense', 'VisUtils', '$timeout',
-      function (VisSense, VisUtils, $timeout) {
+    .directive('vissenseMonitor', ['VisSense',
+      function (VisSense) {
 
         var d = {
           scope: {
@@ -36,35 +36,34 @@
             onVisibilitychange: '&'
           },
           link: function ($scope, $element) {
-            $timeout(function () {
-              var vismon = new VisSense($element[0], $scope.config).monitor({
-                update: function (monitor) {
-                  $scope.onUpdate({monitor: monitor});
-                },
-                hidden: function (monitor) {
-                  $scope.onHidden({monitor: monitor});
-                },
-                visible: function (monitor) {
-                  $scope.onVisible({monitor: monitor});
-                },
-                fullyvisible: function (monitor) {
-                  $scope.onFullyvisible({monitor: monitor});
-                },
-                percentagechange: function (newValue, oldValue, monitor) {
-                  $scope.onPercentagechange({
-                    newValue: newValue,
-                    oldValue: oldValue,
-                    monitor: monitor
-                  });
-                },
-                visibilitychange: function (monitor) {
-                  $scope.onVisibilitychange({monitor: monitor});
-                }
-              }).start();
+            var vismon = new VisSense($element[0], $scope.config).monitor({
+              update: function (monitor) {
+                // $scope.$apply(function(scope) {
+                $scope.onUpdate({monitor: monitor});
+              },
+              hidden: function (monitor) {
+                $scope.onHidden({monitor: monitor});
+              },
+              visible: function (monitor) {
+                $scope.onVisible({monitor: monitor});
+              },
+              fullyvisible: function (monitor) {
+                $scope.onFullyvisible({monitor: monitor});
+              },
+              percentagechange: function (newValue, oldValue, monitor) {
+                $scope.onPercentagechange({
+                  newValue: newValue,
+                  oldValue: oldValue,
+                  monitor: monitor
+                });
+              },
+              visibilitychange: function (monitor) {
+                $scope.onVisibilitychange({monitor: monitor});
+              }
+            }).startAsync();
 
-              $scope.$on('$destroy', function () {
-                vismon.stop();
-              });
+            $scope.$on('$destroy', function () {
+              vismon.stop();
             });
           }
         };

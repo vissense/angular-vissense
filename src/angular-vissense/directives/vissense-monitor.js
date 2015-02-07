@@ -21,6 +21,8 @@
                 $scope.$parent.$digest();
             }, 1000);
 
+            $element.addClass('vissense-monitor');
+
             $scope.monitor = new VisSense($element[0], $scope.config).monitor({
               update: function (monitor) {
                 $scope.onUpdate({monitor: monitor});
@@ -45,6 +47,18 @@
               },
               visibilitychange: function (monitor) {
                 $scope.onVisibilitychange({monitor: monitor});
+
+                $element.removeClass('vissense-monitor-hidden');
+                $element.removeClass('vissense-monitor-fullyvisible');
+                $element.removeClass('vissense-monitor-visible');
+
+                if(monitor.state().fullyvisible) {
+                  $element.addClass('vissense-monitor-fullyvisible');
+                } else if (monitor.state().hidden) {
+                  $element.addClass('vissense-monitor-hidden');
+                } else {
+                  $element.addClass('vissense-monitor-visible');
+                }
               }
             }).startAsync();
 

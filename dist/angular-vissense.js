@@ -22,11 +22,12 @@
 (function (angular) {
   angular.module('angular-vissense.directives')
 
-    .directive('vissenseMonitor', ['VisSense',
-      function (VisSense) {
+    .directive('vissenseMonitor', ['VisSense', 'VisUtils',
+      function (VisSense, VisUtils) {
 
         var d = {
           scope: {
+            monitor: '=?ngModel',
             config: '@',
             onUpdate: '&',
             onHidden: '&',
@@ -36,10 +37,18 @@
             onVisibilitychange: '&'
           },
           link: function ($scope, $element) {
-            var vismon = new VisSense($element[0], $scope.config).monitor({
+            var digest = VisUtils.debounce(function() {
+                $scope.$digest();
+                $scope.$parent.$digest();
+            }, 1000);
+
+            $element.addClass('vissense-monitor');
+
+            $scope.monitor = new VisSense($element[0], $scope.config).monitor({
               update: function (monitor) {
-                // $scope.$apply(function(scope) {
                 $scope.onUpdate({monitor: monitor});
+
+                digest();
               },
               hidden: function (monitor) {
                 $scope.onHidden({monitor: monitor});
@@ -59,11 +68,23 @@
               },
               visibilitychange: function (monitor) {
                 $scope.onVisibilitychange({monitor: monitor});
+
+                $element.removeClass('vissense-monitor-hidden');
+                $element.removeClass('vissense-monitor-fullyvisible');
+                $element.removeClass('vissense-monitor-visible');
+
+                if(monitor.state().fullyvisible) {
+                  $element.addClass('vissense-monitor-fullyvisible');
+                } else if (monitor.state().hidden) {
+                  $element.addClass('vissense-monitor-hidden');
+                } else {
+                  $element.addClass('vissense-monitor-visible');
+                }
               }
             }).startAsync();
 
             $scope.$on('$destroy', function () {
-              vismon.stop();
+              $scope.monitor.stop();
             });
           }
         };

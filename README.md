@@ -5,6 +5,8 @@ angular-vissense
 
 Angular directives for [VisSense.js](https://github.com/vissense/vissense).
 
+This package is highly experimental.
+
 Contribute
 ------------
 

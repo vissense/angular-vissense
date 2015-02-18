@@ -29,6 +29,8 @@
           scope: {
             monitor: '=?ngModel',
             config: '@',
+            onStart: '&',
+            onStop: '&',
             onUpdate: '&',
             onHidden: '&',
             onVisible: '&',
@@ -37,14 +39,20 @@
             onVisibilitychange: '&'
           },
           link: function ($scope, $element) {
-            var digest = VisUtils.debounce(function() {
-                $scope.$digest();
-                $scope.$parent.$digest();
+            var digest = VisUtils.debounce(function () {
+              $scope.$digest();
+              $scope.$parent.$digest();
             }, 1000);
 
             $element.addClass('vissense-monitor');
 
             $scope.monitor = new VisSense($element[0], $scope.config).monitor({
+              start: function (monitor) {
+                $scope.onStart({monitor: monitor});
+              },
+              stop: function (monitor) {
+                $scope.onStop({monitor: monitor});
+              },
               update: function (monitor) {
                 $scope.onUpdate({monitor: monitor});
 
@@ -59,11 +67,11 @@
               fullyvisible: function (monitor) {
                 $scope.onFullyvisible({monitor: monitor});
               },
-              percentagechange: function (newValue, oldValue, monitor) {
+              percentagechange: function (monitor, newValue, oldValue) {
                 $scope.onPercentagechange({
+                  monitor: monitor,
                   newValue: newValue,
-                  oldValue: oldValue,
-                  monitor: monitor
+                  oldValue: oldValue
                 });
               },
               visibilitychange: function (monitor) {
@@ -73,7 +81,7 @@
                 $element.removeClass('vissense-monitor-fullyvisible');
                 $element.removeClass('vissense-monitor-visible');
 
-                if(monitor.state().fullyvisible) {
+                if (monitor.state().fullyvisible) {
                   $element.addClass('vissense-monitor-fullyvisible');
                 } else if (monitor.state().hidden) {
                   $element.addClass('vissense-monitor-hidden');

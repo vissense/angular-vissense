@@ -3,52 +3,66 @@
     .directive('vissenseMetricsInfocard', [function () {
       var d = {
         scope: {
-          elementId: '@vissenseMetricsInfocard'
+          elementId: '@vissenseMetricsInfocard',
+          inactiveAfter: '@'
         },
         controller: ['$scope', '$interval', 'VisSense', 'VisUtils', 'VisSenseService',
-          function($scope, $interval, VisSense, VisUtils, VisSenseService) {
+          function ($scope, $interval, VisSense, VisUtils, VisSenseService) {
 
-          var visobj = VisSenseService.fromId($scope.elementId, {});
+            var visobj = VisSenseService.fromId($scope.elementId, {});
 
-          var metrics = visobj.metrics({
-            strategy: new VisSense.VisMon.Strategy.PollingStrategy({ interval:100 })
-          }).start();
+            var metrics = visobj.metrics({
+              strategy: new VisSense.VisMon.Strategy.PollingStrategy({interval: 100})
+            }).start();
 
-          var vismon = visobj.monitor({
-            visibilitychange: VisUtils.debounce(function(monitor) {
-              $scope.$apply(function() {
-                var state = monitor.state();
-                $scope.code = state.code;
-                $scope.state = state.state;
+            var strategies = [
+              new VisSense.VisMon.Strategy.PollingStrategy({interval: 1000}),
+              new VisSense.VisMon.Strategy.EventStrategy({debounce: 100})
+            ];
+
+            if (VisUtils.isFunction(VisSense.VisMon.Strategy.UserActivityStrategy)) {
+              var userActivityStrategy = new VisSense.VisMon.Strategy.UserActivityStrategy({
+                inactiveAfter: (parseInt($scope.inactiveAfter, 10) || 30000) - 1
               });
-            }, 0)
-          }).start();
+              strategies.push(userActivityStrategy);
+            }
 
-          var _update = VisUtils.debounce(function() {
-            $scope.$apply(function() {
-              $scope.timeHidden = metrics.getMetric('time.hidden').get();
-              $scope.timeVisible = metrics.getMetric('time.visible').get();
-              $scope.timeFullyVisible = metrics.getMetric('time.fullyvisible').get();
-              $scope.timeRelativeVisible = metrics.getMetric('time.relativeVisible').get();
-              $scope.duration = metrics.getMetric('time.duration').get();
+            var vismon = visobj.monitor({
+              strategy: strategies,
+              visibilitychange: VisUtils.debounce(function (monitor) {
+                $scope.$apply(function () {
+                  var state = monitor.state();
+                  $scope.code = state.code;
+                  $scope.state = state.state;
+                });
+              }, 0)
+            }).start();
 
-              $scope.percentage = {
-                current: metrics.getMetric('percentage').get(),
-                max: metrics.getMetric('percentage.max').get(),
-                min: metrics.getMetric('percentage.min').get()
-              };
+            var _update = VisUtils.debounce(function () {
+              $scope.$apply(function () {
+                $scope.timeHidden = metrics.getMetric('time.hidden').get();
+                $scope.timeVisible = metrics.getMetric('time.visible').get();
+                $scope.timeFullyVisible = metrics.getMetric('time.fullyvisible').get();
+                $scope.timeRelativeVisible = metrics.getMetric('time.relativeVisible').get();
+                $scope.duration = metrics.getMetric('time.duration').get();
+
+                $scope.percentage = {
+                  current: metrics.getMetric('percentage').get(),
+                  max: metrics.getMetric('percentage.max').get(),
+                  min: metrics.getMetric('percentage.min').get()
+                };
+              });
+            }, 0);
+
+            var intervalId = $interval(_update, 100);
+
+            $scope.$on('$destroy', function () {
+              metrics.stop();
+              vismon.stop();
+              $interval.cancel(intervalId);
             });
-          }, 0);
 
-          var intervalId = $interval(_update, 200);
-
-          $scope.$on('$destroy', function() {
-            metrics.stop();
-            vismon.stop();
-            $interval.cancel(intervalId);
-          });
-
-        }],
+          }],
         template: '\
 <style>\
 .vissense-metrics-container {\
@@ -83,7 +97,7 @@ color: #888;\
 <div class="vissense-metrics-container">\
 <div style="text-align:center">\
 <span>state: <span data-ng-style="{ color : code > 0 ? \'green\' : \'red\'}">{{state}}</span></span> | \
-<span data-vissense-user-activity></span>\
+<span data-vissense-user-activity data-inactive-after="30000"></span>\
 </div>\
 <div class="vissense-flexbox">\
 <div class="box">\

@@ -6,24 +6,23 @@
           inactiveAfter: '@',
           debounce: '@'
         },
-        controller: ['$scope', '$interval', function ($scope, $interval) {
-          $scope.options = {
-            inactiveAfter: $scope.inactiveAfter || 30000,
-            debounce: $scope.debounce || 100
-          };
-
+        controller: ['$scope', function ($scope) {
           $scope.active = true;
           $scope.installed = VisUtils.isFunction(VisSense.UserActivity);
 
           if ($scope.installed) {
+            $scope.options = {
+              inactiveAfter: parseInt($scope.inactiveAfter, 10) || 30000,
+              debounce: parseInt($scope.debounce, 10) || 50,
+              update: VisUtils.debounce(function(activityMonitor) {
+                $scope.active = activityMonitor.isActive();
+                $scope.$digest();
+              }, 10)
+            };
+
             var activityMonitor = new VisSense.UserActivity($scope.options).start();
-
-            var intervalId = $interval(function () {
-              $scope.active = activityMonitor.isActive();
-            }, 1000);
-
             $scope.$on('$destroy', function () {
-              $interval.cancel(intervalId);
+              activityMonitor.stop();
             });
           }
         }],

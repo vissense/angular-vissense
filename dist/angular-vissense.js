@@ -122,7 +122,9 @@
           var vismon = visobj.monitor({
             visibilitychange: VisUtils.debounce(function(monitor) {
               $scope.$apply(function() {
-                $scope.state = monitor.state().state;
+                var state = monitor.state();
+                $scope.code = state.code;
+                $scope.state = state.state;
               });
             }, 0)
           }).start();
@@ -161,7 +163,7 @@ left: 42px;\
 bottom: 13px;\
 width: 600px;\
 height: 200px;\
-box-shadow: 3px 3px 15px 3px rgba(0, 0, 0, 0.4);\
+box-shadow: 1px 1px 1px 2px rgba(99, 99, 99, 0.4);\
 z-index: 99999;\
 background-color: rgba(242,242,242,0.9);\
 }\
@@ -184,7 +186,10 @@ color: #888;\
 }\
 </style>\
 <div class="vissense-metrics-container">\
-<div style="text-align:center">{{state}}</div>\
+<div style="text-align:center">\
+<span>state: <span data-ng-style="{ color : code > 0 ? \'green\' : \'red\'}">{{state}}</span></span> | \
+<span data-vissense-user-activity></span>\
+</div>\
 <div class="vissense-flexbox">\
 <div class="box">\
 <div>{{timeVisible / 1000 | number:1}}s</div>\
@@ -397,6 +402,47 @@ color: #888;\
           });
         }],
         template: '{{ state | json }}'
+      };
+
+      return d;
+    }])
+  ;
+
+})(angular);
+
+(function (angular) {
+  angular.module('angular-vissense.directives.debug')
+    .directive('vissenseUserActivity', ['VisSense', 'VisUtils', function (VisSense, VisUtils) {
+      var d = {
+        scope: {
+          inactiveAfter: '@',
+          debounce: '@'
+        },
+        controller: ['$scope', '$interval', function ($scope, $interval) {
+          $scope.options = {
+            inactiveAfter: $scope.inactiveAfter || 30000,
+            debounce: $scope.debounce || 100
+          };
+
+          $scope.active = true;
+          $scope.installed = VisUtils.isFunction(VisSense.UserActivity);
+
+          if ($scope.installed) {
+            var activityMonitor = new VisSense.UserActivity($scope.options).start();
+
+            var intervalId = $interval(function () {
+              $scope.active = activityMonitor.isActive();
+            }, 1000);
+
+            $scope.$on('$destroy', function () {
+              $interval.cancel(intervalId);
+            });
+          }
+        }],
+        template: '<span>user active: ' +
+        '<span data-ng-style="{ color : active ? \'green\' : \'red\'}">{{active}}</span>' +
+        '<span data-ng-if="!installed"> (not installed)</span>' +
+        '</span>'
       };
 
       return d;

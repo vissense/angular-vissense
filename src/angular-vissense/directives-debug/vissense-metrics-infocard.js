@@ -4,6 +4,9 @@
       if(!VisUtils.isFunction(VisSense.VisMon.Strategy.MetricsStrategy)) {
         throw new Error('Cannot load MetricsStrategy. Is it included?');
       }
+      if(!VisUtils.isFunction(VisSense.VisMon.Strategy.MetricsStrategy)) {
+        throw new Error('Cannot load MetricsStrategy. Is it included?');
+      }
 
       var d = {
         scope: {
@@ -13,6 +16,10 @@
         },
         controller: ['$scope', '$interval', 'VisSenseService',
           function ($scope, $interval, VisSenseService) {
+            $scope.model = {
+              inactiveAfter: (parseInt($scope.inactiveAfter, 10) || 30000) - 1
+            };
+
             var visobj = VisSenseService.fromId($scope.elementId, {
               hidden: $scope.hidden
             });
@@ -26,7 +33,7 @@
             // support for plugin vissense-user-activity
             if (VisUtils.isFunction(VisSense.VisMon.Strategy.UserActivityStrategy)) {
               var userActivityStrategy = new VisSense.VisMon.Strategy.UserActivityStrategy({
-                inactiveAfter: (parseInt($scope.inactiveAfter, 10) || 30000) - 1
+                inactiveAfter: $scope.model.inactiveAfter
               });
               strategies.push(userActivityStrategy);
             }
@@ -101,7 +108,7 @@ color: #888;\
 <div class="vissense-metrics-container">\
 <div style="text-align:center">\
 <span>state: <span data-ng-style="{ color : code > 0 ? \'green\' : \'red\'}">{{state}}</span></span> | \
-<span data-vissense-user-activity data-inactive-after="30000"></span>\
+<span data-vissense-user-activity data-inactive-after="{{model.inactiveAfter}}"></span>\
 </div>\
 <div class="vissense-flexbox">\
 <div class="box">\

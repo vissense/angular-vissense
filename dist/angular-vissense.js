@@ -105,26 +105,30 @@
 
 (function (angular) {
   angular.module('angular-vissense.directives.debug')
-    .directive('vissenseMetricsInfocard', [function () {
+    .directive('vissenseMetricsInfocard', ['VisSense', 'VisUtils', function (VisSense, VisUtils) {
+      if(!VisUtils.isFunction(VisSense.VisMon.Strategy.MetricsStrategy)) {
+        throw new Error('Cannot load MetricsStrategy. Is it included?');
+      }
+
       var d = {
         scope: {
           elementId: '@vissenseMetricsInfocard',
-          inactiveAfter: '@'
+          inactiveAfter: '@',
+          hidden: '@'
         },
-        controller: ['$scope', '$interval', 'VisSense', 'VisUtils', 'VisSenseService',
-          function ($scope, $interval, VisSense, VisUtils, VisSenseService) {
-
-            var visobj = VisSenseService.fromId($scope.elementId, {});
-
-            var metrics = visobj.metrics({
-              strategy: new VisSense.VisMon.Strategy.PollingStrategy({interval: 100})
-            }).start();
+        controller: ['$scope', '$interval', 'VisSenseService',
+          function ($scope, $interval, VisSenseService) {
+            var visobj = VisSenseService.fromId($scope.elementId, {
+              hidden: $scope.hidden
+            });
 
             var strategies = [
-              new VisSense.VisMon.Strategy.PollingStrategy({interval: 1000}),
-              new VisSense.VisMon.Strategy.EventStrategy({debounce: 100})
+              new VisSense.VisMon.Strategy.PollingStrategy({interval: 99}),
+              new VisSense.VisMon.Strategy.EventStrategy({debounce: 30}),
+              new VisSense.VisMon.Strategy.MetricsStrategy()
             ];
 
+            // support for plugin vissense-user-activity
             if (VisUtils.isFunction(VisSense.VisMon.Strategy.UserActivityStrategy)) {
               var userActivityStrategy = new VisSense.VisMon.Strategy.UserActivityStrategy({
                 inactiveAfter: (parseInt($scope.inactiveAfter, 10) || 30000) - 1
@@ -132,7 +136,7 @@
               strategies.push(userActivityStrategy);
             }
 
-            var vismon = visobj.monitor({
+            var monitor = visobj.monitor({
               strategy: strategies,
               visibilitychange: VisUtils.debounce(function (monitor) {
                 $scope.$apply(function () {
@@ -144,6 +148,7 @@
             }).start();
 
             var _update = VisUtils.debounce(function () {
+              var metrics = monitor.metrics();
               $scope.$apply(function () {
                 $scope.timeHidden = metrics.getMetric('time.hidden').get();
                 $scope.timeVisible = metrics.getMetric('time.visible').get();
@@ -162,8 +167,7 @@
             var intervalId = $interval(_update, 100);
 
             $scope.$on('$destroy', function () {
-              metrics.stop();
-              vismon.stop();
+              monitor.stop();
               $interval.cancel(intervalId);
             });
 

@@ -1,6 +1,6 @@
 'use strict';
 
-describe('vissenseMonitor', function() {
+describe('vissenseMonitor', function () {
   var element;
 
   var outerScope;
@@ -10,89 +10,173 @@ describe('vissenseMonitor', function() {
 
   beforeEach(module('angular-vissense'));
 
-  beforeEach(inject(function($rootScope, $compile) {
-    outerScope = $rootScope;
+  describe('commons', function () {
+    beforeEach(inject(function ($rootScope, $compile) {
+      outerScope = $rootScope.$new();
 
-    outerScope.monitor = null;
-    outerScope.hiddenSpy = sinon.spy();
-    outerScope.visibleSpy = sinon.spy();
-    outerScope.fullyvisibleSpy = sinon.spy();
+      outerScope.monitor = null;
+      outerScope.hiddenSpy = sinon.spy();
+      outerScope.visibleSpy = sinon.spy();
+      outerScope.fullyvisibleSpy = sinon.spy();
 
-    element = angular.element('<div>' +
-    '<div vissense-monitor data-ng-model="monitor" ' +
-    '  on-hidden="hiddenSpy(monitor)" ' +
-    '  on-visible="visibleSpy(monitor)" ' +
-    '  on-fullyvisible="fullyvisibleSpy(monitor)">' +
-    'This element is {{ monitor.state().state }}!' +
-    '</div>' +
-    '</div>');
+      element = angular.element('<div>' +
+      '<div vissense-monitor data-ng-model="monitor" ' +
+      '  on-hidden="hiddenSpy(monitor)" ' +
+      '  on-visible="visibleSpy(monitor)" ' +
+      '  on-fullyvisible="fullyvisibleSpy(monitor)">' +
+      'This element is {{ monitor.state().state }}!' +
+      '</div>' +
+      '</div>');
 
-    template = $compile(element)(outerScope);
+      template = $compile(element)(outerScope);
 
-    innerScope = element.isolateScope();
+      innerScope = element.isolateScope();
 
-    outerScope.$digest();
-  }));
+      outerScope.$digest();
+    }));
 
-  it('should bind monitor to ng-model param', function(done) {
-    should.exist(outerScope.monitor);
-    should.exist(outerScope.monitor.state());
-    should.equal(outerScope.monitor.state().state, undefined);
+    it('should bind monitor to ng-model param', function (done) {
+      should.exist(outerScope.monitor);
+      should.exist(outerScope.monitor.state());
+      should.equal(outerScope.monitor.state().state, undefined);
 
-    setTimeout(function() {
-      expect(outerScope.monitor.state().state).to.be.a('string');
-      expect(outerScope.monitor.state().state).to.equal('hidden');
-      done();
-    }, 1);
+      setTimeout(function () {
+        expect(outerScope.monitor.state().state).to.be.a('string');
+        done();
+      }, 1);
+    });
+
+    it('should add class "vissense-monitor"', function () {
+      var contents = element.find('div.vissense-monitor');
+
+      contents.should.have.class('vissense-monitor');
+    });
+
+    it('should bind the content', function (done) {
+      var contents = element.find('div.vissense-monitor');
+
+      contents.length.should.equal(1);
+
+      contents.text().should.equal('This element is !');
+
+      setTimeout(function () {
+
+        outerScope.$digest();
+
+        contents.text().should.equal('This element is hidden!');
+
+        done();
+      }, 1);
+    });
   });
 
-  it('should add class "vissense-monitor"', function() {
-    var contents = element.find('div.vissense-monitor');
+  describe('hidden', function () {
+    beforeEach(inject(function ($rootScope, $compile) {
+      outerScope = $rootScope.$new();
 
-    contents.should.have.class('vissense-monitor');
-  });
+      outerScope.monitor = null;
+      outerScope.hiddenSpy = sinon.spy();
+      outerScope.visibleSpy = sinon.spy();
+      outerScope.fullyvisibleSpy = sinon.spy();
 
-  it('should add class "vissense-monitor-hidden"', function(done) {
-    var contents = element.find('div.vissense-monitor');
+      element = angular.element('<div>' +
+      '<div vissense-monitor data-ng-model="monitor" ' +
+      '  on-hidden="hiddenSpy(monitor)" ' +
+      '  on-visible="visibleSpy(monitor)" ' +
+      '  on-fullyvisible="fullyvisibleSpy(monitor)">' +
+      'This element is {{ monitor.state().state }}!' +
+      '</div>' +
+      '</div>');
 
-    contents.should.not.have.class('vissense-monitor-hidden');
+      template = $compile(element)(outerScope);
 
-    setTimeout(function() {
-      contents.should.have.class('vissense-monitor-hidden');
-      done();
-    }, 1);
-  });
+      innerScope = element.isolateScope();
 
-  it('should call hidden callback', function(done) {
+      outerScope.$digest();
+    }));
 
-    outerScope.hiddenSpy.should.not.have.been.called;
-    outerScope.visibleSpy.should.not.have.been.called;
-    outerScope.fullyvisibleSpy.should.not.have.been.called;
+    it('should add class "vissense-monitor-hidden"', function (done) {
+      var contents = element.find('div.vissense-monitor');
 
-    setTimeout(function() {
-      expect(outerScope.hiddenSpy.callCount).to.equal(1);
+      contents.should.not.have.class('vissense-monitor-hidden');
 
+      setTimeout(function () {
+        contents.should.have.class('vissense-monitor-hidden');
+        done();
+      }, 1);
+    });
+
+    it('should call "hidden" callback', function (done) {
+      outerScope.hiddenSpy.should.not.have.been.called;
       outerScope.visibleSpy.should.not.have.been.called;
       outerScope.fullyvisibleSpy.should.not.have.been.called;
 
-      done();
-    }, 1);
+      setTimeout(function () {
+        expect(outerScope.hiddenSpy.callCount).to.equal(1);
+
+        outerScope.visibleSpy.should.not.have.been.called;
+        outerScope.fullyvisibleSpy.should.not.have.been.called;
+
+        done();
+      }, 1);
+    });
   });
 
-  it('should bind the content', function(done) {
-    var contents = element.find('div.vissense-monitor');
 
-    contents.length.should.equal(1);
+  describe('fullyvisible', function () {
+    beforeEach(inject(function ($rootScope, $compile) {
+      outerScope = $rootScope.$new();
 
-    contents.text().should.equal('This element is !');
+      outerScope.monitor = null;
+      outerScope.hiddenSpy = sinon.spy();
+      outerScope.visibleSpy = sinon.spy();
+      outerScope.fullyvisibleSpy = sinon.spy();
 
-    setTimeout(function() {
+      element = angular.element('<div>' +
+      '<div vissense-monitor data-ng-model="monitor" ' +
+      '  on-hidden="hiddenSpy(monitor)" ' +
+      '  on-visible="visibleSpy(monitor)" ' +
+      '  on-fullyvisible="fullyvisibleSpy(monitor)">' +
+      'This element is {{ monitor.state().state }}!' +
+      '</div>' +
+      '</div>');
+
+      $('body,html').css('height', '100%');
+
+      // appending the element to body will make it visible
+      $('body').append(element);
+
+      template = $compile(element)(outerScope);
+
+      innerScope = element.isolateScope();
 
       outerScope.$digest();
+    }));
 
-      contents.text().should.equal('This element is hidden!');
+    it('should add class "vissense-monitor-fullyvisible"', function (done) {
+      var contents = element.find('div.vissense-monitor');
 
-      done();
-    }, 1);
+      contents.should.not.have.class('vissense-monitor-fullyvisible');
+
+      setTimeout(function () {
+        contents.should.have.class('vissense-monitor-fullyvisible');
+        done();
+      }, 1);
+    });
+
+    it('should call "visible" and "fullyvisible" callback', function (done) {
+      outerScope.hiddenSpy.should.not.have.been.called;
+      outerScope.visibleSpy.should.not.have.been.called;
+      outerScope.fullyvisibleSpy.should.not.have.been.called;
+
+      setTimeout(function () {
+        outerScope.hiddenSpy.should.not.have.been.called;
+
+        expect(outerScope.visibleSpy.callCount).to.equal(1);
+        expect(outerScope.fullyvisibleSpy.callCount).to.equal(1);
+
+        done();
+      }, 1);
+    });
   });
 });

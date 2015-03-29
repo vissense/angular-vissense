@@ -9,6 +9,12 @@ module.exports = function(config) {
     // available frameworks: https://npmjs.org/browse/keyword/karma-adapter
     frameworks: ['mocha', 'chai-jquery', 'jquery-1.8.3', 'sinon-chai'],
 
+    client: {
+      mocha: {
+        timeout: '10000'
+      }
+    },
+
     plugins: [
       'karma-mocha',
       'karma-chai',

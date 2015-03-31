@@ -39,7 +39,7 @@
             onVisibilitychange: '&'
           },
           link: function ($scope, $element) {
-            var digest = VisUtils.debounce(function () {
+            var digest = VisUtils.throttle(function () {
               $scope.$digest();
               $scope.$parent.$digest();
             }, 1000);

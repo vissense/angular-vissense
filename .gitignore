@@ -15,3 +15,5 @@ libpeerconnection.log
 .DS_Store
 
 bower_components
+
+dist/coverage

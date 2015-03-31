@@ -15,16 +15,6 @@ module.exports = function(config) {
       }
     },
 
-    plugins: [
-      'karma-mocha',
-      'karma-chai',
-      'karma-sinon-chai',
-      'karma-chrome-launcher',
-      'karma-phantomjs-launcher',
-      'karma-jquery',
-      'karma-chai-jquery'
-    ],
-
     // list of files / patterns to load in the browser
     files: [
       'bower_components/angular/angular.js',
@@ -42,12 +32,25 @@ module.exports = function(config) {
     // preprocess matching files before serving them to the browser
     // available preprocessors: https://npmjs.org/browse/keyword/karma-preprocessor
     preprocessors: {
+      'src/angular-vissense/directives/vissense-monitor.js': ['coverage']
     },
 
     // test results reporter to use
     // possible values: 'dots', 'progress'
     // available reporters: https://npmjs.org/browse/keyword/karma-reporter
-    reporters: ['progress'],
+    reporters: ['progress', 'coverage'],
+
+    coverageReporter: {
+      reporters: [{
+        type: 'lcov',
+        dir: 'dist/coverage/',
+        subdir: function (browser) {
+          // normalization process to keep a consistent browser name accross different OS
+          // outputs the results into e.g. './<dir>/firefox/'
+          return browser.toLowerCase().split(/[ /-]/)[0];
+        }
+      }]
+    },
 
     // web server port
     port: 9876,

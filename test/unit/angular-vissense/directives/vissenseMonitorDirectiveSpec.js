@@ -18,9 +18,19 @@ describe('vissenseMonitor', function () {
       outerScope.hiddenSpy = sinon.spy();
       outerScope.visibleSpy = sinon.spy();
       outerScope.fullyvisibleSpy = sinon.spy();
+      outerScope.updateSpy = sinon.spy();
+      outerScope.percentageChangeSpy = sinon.spy();
+      outerScope.visibilityChangeSpy = sinon.spy();
+      outerScope.startSpy = sinon.spy();
+      outerScope.stopSpy = sinon.spy();
 
       element = angular.element('<div>' +
       '<div vissense-monitor data-ng-model="monitor" ' +
+      '  on-start="startSpy(monitor)" ' +
+      '  on-stop="stopSpy(monitor)" ' +
+      '  on-update="updateSpy(monitor)" ' +
+      '  on-visibilitychange="visibilityChangeSpy(monitor)" ' +
+      '  on-percentagechange="percentageChangeSpy(monitor)" ' +
       '  on-hidden="hiddenSpy(monitor)" ' +
       '  on-visible="visibleSpy(monitor)" ' +
       '  on-fullyvisible="fullyvisibleSpy(monitor)">' +
@@ -30,7 +40,7 @@ describe('vissenseMonitor', function () {
 
       template = $compile(element)(outerScope);
 
-      innerScope = element.isolateScope();
+      innerScope = element.scope();
 
       outerScope.$digest();
     }));
@@ -50,6 +60,29 @@ describe('vissenseMonitor', function () {
       var contents = element.find('div.vissense-monitor');
 
       contents.should.have.class('vissense-monitor');
+    });
+
+    it('should invoke passed callbacks', function (done) {
+      outerScope.updateSpy.should.not.have.been.called;
+      outerScope.startSpy.should.not.have.been.called;
+
+      setTimeout(function () {
+        outerScope.startSpy.should.have.been.calledOnce;
+
+        outerScope.updateSpy.should.have.been.called;
+        outerScope.visibilityChangeSpy.should.have.been.called;
+        outerScope.percentageChangeSpy.should.have.been.called;
+
+
+        outerScope.stopSpy.should.not.have.been.called;
+
+        innerScope.$destroy();
+
+        outerScope.stopSpy.should.have.been.calledOnce;
+
+        done();
+
+      }, 1);
     });
 
     it('should bind the content', function (done) {

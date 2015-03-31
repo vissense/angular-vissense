@@ -5,8 +5,6 @@ angular-vissense
 
 Angular directives for [VisSense.js](https://github.com/vissense/vissense).
 
-This package is highly experimental. Come back when we have tests.
-
 ```html
   <div vissense-monitor
       on-hidden="state = 'hidden'"

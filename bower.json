@@ -15,6 +15,7 @@
     "test",
     "gulpfile.js",
     "karma-*.conf.js",
+    "dist/coverage",
     "**/.*"
   ],
   "dependencies": {

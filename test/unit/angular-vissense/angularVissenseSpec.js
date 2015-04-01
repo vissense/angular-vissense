@@ -3,8 +3,7 @@
 describe('', function() {
 
   var module;
-  var dependencies;
-  dependencies = [];
+  var dependencies = [];
 
   var hasModule = function(module) {
     return dependencies.indexOf(module) >= 0;

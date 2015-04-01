@@ -179,10 +179,8 @@ describe('vissenseMonitor', function () {
       element.css('width', '10px');
       element.css('height', '10px');
 
-      $('body,html').css('height', '100%');
-
       // appending the element to body will make it visible
-      $('body').append(element);
+      angular.element('body').append(element);
 
       template = $compile(element)(outerScope);
 
@@ -236,10 +234,8 @@ describe('vissenseMonitor', function () {
       '</div>' +
       '</div>');
 
-      $('body,html').css('height', '100%');
-
       // appending the element to body will make it visible
-      $('body').append(element);
+      angular.element('body').append(element);
 
       template = $compile(element)(outerScope);
 

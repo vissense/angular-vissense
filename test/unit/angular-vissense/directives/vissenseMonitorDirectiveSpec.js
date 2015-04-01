@@ -155,6 +155,68 @@ describe('vissenseMonitor', function () {
     });
   });
 
+  describe('visible', function () {
+    beforeEach(inject(function ($rootScope, $compile) {
+      outerScope = $rootScope.$new();
+
+      outerScope.monitor = null;
+      outerScope.hiddenSpy = sinon.spy();
+      outerScope.visibleSpy = sinon.spy();
+      outerScope.fullyvisibleSpy = sinon.spy();
+
+      element = angular.element('<div>' +
+      '<div vissense-monitor data-ng-model="monitor" ' +
+      '  on-hidden="hiddenSpy(monitor)" ' +
+      '  on-visible="visibleSpy(monitor)" ' +
+      '  on-fullyvisible="fullyvisibleSpy(monitor)">' +
+      'This element is {{ monitor.state().state }}!' +
+      '</div>' +
+      '</div>');
+
+      element.css('position', 'absolute');
+      element.css('top', '-1px');
+      element.css('left', '-1px');
+      element.css('width', '10px');
+      element.css('height', '10px');
+
+      $('body,html').css('height', '100%');
+
+      // appending the element to body will make it visible
+      $('body').append(element);
+
+      template = $compile(element)(outerScope);
+
+      innerScope = element.isolateScope();
+
+      outerScope.$digest();
+    }));
+
+    it('should add class "vissense-monitor-visible"', function (done) {
+      var contents = element.find('div.vissense-monitor');
+
+      contents.should.not.have.class('vissense-monitor-visible');
+
+      setTimeout(function () {
+        contents.should.have.class('vissense-monitor-visible');
+        done();
+      }, 1);
+    });
+
+    it('should call "visible" callback', function (done) {
+      outerScope.hiddenSpy.should.not.have.been.called;
+      outerScope.visibleSpy.should.not.have.been.called;
+      outerScope.fullyvisibleSpy.should.not.have.been.called;
+
+      setTimeout(function () {
+        outerScope.hiddenSpy.should.not.have.been.called;
+        outerScope.fullyvisibleSpy.should.not.have.been.called;
+
+        expect(outerScope.visibleSpy.callCount).to.equal(1);
+
+        done();
+      }, 1);
+    });
+  });
 
   describe('fullyvisible', function () {
     beforeEach(inject(function ($rootScope, $compile) {

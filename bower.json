@@ -1,14 +1,32 @@
 {
   "name": "angular-vissense",
   "version": "0.0.5",
+  "license": "MIT",
+  "description": "AngularJS directives for VisSense.js.",
+  "homepage": "https://github.com/vissense/angular-vissense",
   "authors": [
     {
-      "name": "theborakompanioni",
+      "name": "tbk",
       "email": "theborakompanioni+angular-vissense@gmail.com"
     }
   ],
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/vissense/angular-vissense.git"
+  },
   "main": [
     "dist/angular-vissense.js"
+  ],
+  "keywords": [
+    "angular",
+    "vissense",
+    "visibility",
+    "viewtime",
+    "viewport",
+    "visible",
+    "hidden",
+    "monitor",
+    "observe"
   ],
   "ignore": [
     "src",

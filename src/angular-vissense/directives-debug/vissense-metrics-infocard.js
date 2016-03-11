@@ -26,7 +26,7 @@
 
             var strategies = [
               new VisSense.VisMon.Strategy.PollingStrategy({interval: 99}),
-              new VisSense.VisMon.Strategy.EventStrategy({debounce: 30}),
+              new VisSense.VisMon.Strategy.EventStrategy({throttle: 30}),
               new VisSense.VisMon.Strategy.MetricsStrategy()
             ];
 
